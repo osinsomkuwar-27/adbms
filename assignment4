@@ -1,0 +1,40 @@
+CREATE DATABASE GreenRecycleDB;
+
+USE GreenRecycleDB;
+
+CREATE TABLE EWaste_Management (
+    Waste_ID INT,
+    Device_Type VARCHAR(50),
+    Manufacturer VARCHAR(50),
+    Collection_Date DATE,
+    Collection_Center_ID INT,
+    Weight DECIMAL(8,2),
+    Status VARCHAR(20),
+    PRIMARY KEY (Waste_ID, Collection_Center_ID)
+)
+PARTITION BY HASH(Collection_Center_ID)
+PARTITIONS 4;
+
+INSERT INTO EWaste_Management
+VALUES
+(1, 'Mobile', 'Samsung', '2024-01-15', 101, 2.5, 'Collected'),
+(2, 'Laptop', 'Dell', '2024-02-20', 102, 3.4, 'Recycled'),
+(3, 'Monitor', 'HP', '2024-03-12', 103, 5.0, 'Processing'),
+(4, 'Printer', 'Canon', '2024-04-18', 104, 6.2, 'Collected'),
+(5, 'Keyboard', 'Logitech', '2024-05-25', 105, 0.7, 'Recycled'),
+(6, 'Mouse', 'HP', '2024-06-10', 106, 0.4, 'Collected'),
+(7, 'CPU', 'Lenovo', '2024-07-15', 107, 8.5, 'Processing'),
+(8, 'Television', 'Sony', '2024-08-20', 108, 12.6, 'Collected');
+
+SELECT * FROM EWaste_Management;
+
+SELECT *
+FROM EWaste_Management
+WHERE Collection_Center_ID = 104;
+
+SELECT
+    PARTITION_NAME,
+    TABLE_ROWS
+FROM INFORMATION_SCHEMA.PARTITIONS
+WHERE TABLE_SCHEMA = 'GreenRecycleDB'
+AND TABLE_NAME = 'EWaste_Management';
