@@ -1,0 +1,45 @@
+CREATE DATABASE GreenRecycleDB;
+
+USE GreenRecycleDB;
+
+CREATE TABLE EWaste_Management (
+    Waste_ID INT,
+    Device_Type VARCHAR(50),
+    Manufacturer VARCHAR(50),
+    Collection_Date DATE,
+    Collection_Center_ID INT,
+    Weight DECIMAL(8,2),
+    Status VARCHAR(20),
+    PRIMARY KEY (Waste_ID, Collection_Date)
+)
+PARTITION BY RANGE (YEAR(Collection_Date)) (
+    PARTITION p2022 VALUES LESS THAN (2023),
+    PARTITION p2023 VALUES LESS THAN (2024),
+    PARTITION p2024 VALUES LESS THAN (2025),
+    PARTITION p2025 VALUES LESS THAN (2026),
+    PARTITION pFuture VALUES LESS THAN MAXVALUE
+);
+
+INSERT INTO EWaste_Management
+VALUES
+(1, 'Mobile', 'Samsung', '2022-05-10', 101, 2.5, 'Collected'),
+(2, 'Laptop', 'Dell', '2023-03-15', 102, 3.8, 'Recycled'),
+(3, 'Monitor', 'HP', '2024-07-20', 103, 5.2, 'Processing'),
+(4, 'Printer', 'Canon', '2025-01-18', 104, 6.1, 'Collected'),
+(5, 'Keyboard', 'Logitech', '2023-11-08', 105, 0.8, 'Recycled'),
+(6, 'Mouse', 'HP', '2024-09-25', 106, 0.5, 'Collected'),
+(7, 'CPU', 'Lenovo', '2022-12-30', 107, 8.7, 'Processing'),
+(8, 'Television', 'Sony', '2026-02-10', 108, 12.3, 'Collected');
+
+SELECT * FROM EWaste_Management;
+
+SELECT *
+FROM EWaste_Management
+WHERE Collection_Date BETWEEN '2024-01-01' AND '2024-12-31';
+
+SELECT
+    PARTITION_NAME,
+    TABLE_ROWS
+FROM INFORMATION_SCHEMA.PARTITIONS
+WHERE TABLE_SCHEMA = 'GreenRecycleDB'
+AND TABLE_NAME = 'EWaste_Management';
