@@ -1,0 +1,619 @@
+Question 1 
+CREATE DATABASE product_db;
+USE product_db;
+
+CREATE TABLE PRODUCT (
+    product_id INT,
+    product_name VARCHAR(50),
+    category VARCHAR(30),
+    price INT,
+    PRIMARY KEY (product_id, price)
+)
+PARTITION BY RANGE (price) (
+    PARTITION p_low VALUES LESS THAN (1000),
+    PARTITION p_mid VALUES LESS THAN (5000),
+    PARTITION p_high VALUES LESS THAN (1000000)
+);
+
+INSERT INTO PRODUCT VALUES
+(101, 'Pen', 'Stationery', 50),
+(102, 'Notebook', 'Stationery', 200),
+(103, 'Mouse', 'Electronics', 800),
+(104, 'Keyboard', 'Electronics', 1500),
+(105, 'Headphones', 'Electronics', 3000),
+(106, 'Monitor', 'Electronics', 8000),
+(107, 'Chair', 'Furniture', 4500),
+(108, 'Table', 'Furniture', 12000);
+
+SELECT * FROM PRODUCT;
+
+UPDATE PRODUCT
+SET price = 6000
+WHERE product_id = 101 AND price = 50;
+
+UPDATE PRODUCT
+SET price = 900
+WHERE product_id = 104 AND price = 1500;
+
+DELETE FROM PRODUCT
+WHERE product_id = 102 AND price = 200;
+
+SELECT * FROM PRODUCT PARTITION (p_low);
+
+SELECT * FROM PRODUCT PARTITION (p_mid);
+
+SELECT * FROM PRODUCT PARTITION (p_high);
+
+SELECT PARTITION_NAME, PARTITION_DESCRIPTION
+FROM INFORMATION_SCHEMA.PARTITIONS
+WHERE TABLE_SCHEMA = 'product_db'
+AND TABLE_NAME = 'product';
+Partitioning divides a large table into smaller parts called partitions based on a particular column. In this practical, we partitioned the PRODUCT table using Range Partitioning based on product price. Products below ₹1,000 are stored in p_low, products between ₹1,000 and ₹5,000 are stored in p_mid, and expensive products are stored in p_high. MySQL automatically stores, moves and deletes records from the appropriate partitions during DML operations. Partition-wise retrieval improves performance by accessing only the required partition, reducing unnecessary data scanning.
+
+Question 2
+CREATE DATABASE shopping;
+USE shopping;
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    product_name VARCHAR(50),
+    amount INT,
+    order_status VARCHAR(20)
+);
+
+CREATE TABLE payments (
+    payment_id INT PRIMARY KEY,
+    order_id INT,
+    amount INT,
+    payment_status VARCHAR(20),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
+
+INSERT INTO orders VALUES
+(101, 'Aarav', 'Laptop', 50000, 'PENDING'),
+(102, 'Priya', 'Mobile', 20000, 'PENDING');
+
+INSERT INTO payments VALUES
+(1, 101, 50000, 'PENDING'),
+(2, 102, 20000, 'PENDING');
+
+SELECT * FROM orders;
+SELECT * FROM payments;
+
+START TRANSACTION;
+
+UPDATE orders
+SET order_status = 'CONFIRMED'
+WHERE order_id = 101;
+
+UPDATE payments
+SET payment_status = 'SUCCESS'
+WHERE order_id = 101;
+
+COMMIT;
+
+SELECT * FROM orders;
+SELECT * FROM payments;
+
+START TRANSACTION;
+
+UPDATE orders
+SET order_status = 'CONFIRMED'
+WHERE order_id = 102;
+
+UPDATE payments
+SET payment_status = 'SUCCESS'
+WHERE order_id = 102;
+
+ROLLBACK;
+
+SELECT * FROM orders;
+SELECT * FROM payments;
+
+Question 3
+use employee_db
+
+db.structured_employees.drop()
+db.unstructured_employees.drop()
+
+db.createCollection("structured_employees")
+db.createCollection("unstructured_employees")
+
+db.structured_employees.insertMany([
+    {
+        emp_id: 101,
+        name: "Aarav Sharma",
+        designation: "Software Developer",
+        department: "IT",
+        salary: 50000,
+        contact: {
+            phone: "9876543210",
+            email: "aarav@gmail.com"
+        }
+    },
+    {
+        emp_id: 102,
+        name: "Priya Patil",
+        designation: "HR Manager",
+        department: "HR",
+        salary: 45000,
+        contact: {
+            phone: "9876543211",
+            email: "priya@gmail.com"
+        }
+    },
+    {
+        emp_id: 103,
+        name: "Rahul Verma",
+        designation: "Data Analyst",
+        department: "Analytics",
+        salary: 60000,
+        contact: {
+            phone: "9876543212",
+            email: "rahul@gmail.com"
+        }
+    }
+])
+
+db.unstructured_employees.insertMany([
+    {
+        emp_id: 201,
+        name: "Sneha Kulkarni",
+        designation: "UI Designer",
+        department: "Design",
+        salary: 55000,
+        contact: "sneha@gmail.com",
+        skills: ["Figma", "UI Design", "Photoshop"],
+        experience: 3,
+        address: {
+            city: "Pune",
+            state: "Maharashtra"
+        }
+    },
+    {
+        emp_id: 202,
+        name: "Kabir Mehta",
+        designation: "Software Engineer",
+        department: "IT",
+        salary: 70000,
+        contact: {
+            phone: "9876543213",
+            email: "kabir@gmail.com"
+        },
+        skills: ["Java", "MongoDB", "Node.js"],
+        projects: ["Web Application", "API Development"],
+        experience: 5
+    },
+    {
+        emp_id: 203,
+        name: "Meera Joshi",
+        designation: "Marketing Executive",
+        department: "Marketing",
+        salary: 40000,
+        contact: "9876543214",
+        address: "Mumbai",
+        experience: 2,
+        languages: ["English", "Hindi", "Marathi"]
+    }
+])
+
+db.structured_employees.find()
+db.unstructured_employees.find()
+MongoDB is a NoSQL document-oriented database that stores data in BSON format, which is similar to JSON. In this practical, we created an employee database with two collections: structured and unstructured employees. Structured documents follow the same schema, whereas unstructured documents can contain different fields. We used insertMany() to insert multiple employee records and find() to retrieve and display all the documents. MongoDB provides flexibility because documents in the same collection do not necessarily need to have identical structures.
+
+Question 4
+use shop
+
+db.products.drop()
+
+db.products.insertMany([
+    {product_id: 1, product_name: "Laptop", category: "Electronics"},
+    {product_id: 2, product_name: "Mobile", category: "Electronics"},
+    {product_id: 3, product_name: "Mouse", category: "Electronics"},
+    {product_id: 4, product_name: "Shirt", category: "Clothing"},
+    {product_id: 5, product_name: "Jeans", category: "Clothing"},
+    {product_id: 6, product_name: "Shoes", category: "Clothing"},
+    {product_id: 7, product_name: "Book", category: "Stationery"},
+    {product_id: 8, product_name: "Pen", category: "Stationery"}
+])
+
+db.products.find()
+
+db.products.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {out: "category_count"}
+)
+
+db.category_count.find()
+db.products.aggregate([
+    {
+        $group: {
+            _id: "$category",
+            total_products: { $sum: 1 }
+        }
+    }
+])
+MapReduce is a programming model used to process large datasets. It consists of Map, Shuffle and Reduce phases. In the Map phase, each product generates a category and a value of 1. In the Shuffle phase, values are grouped according to their category. In the Reduce phase, values are added to calculate the total number of products in each category. Apache Cassandra is a distributed NoSQL database that provides scalability, high availability, fault tolerance and fast read/write operations. It is commonly used in IoT applications for storing large amounts of sensor data.
+
+Question 5
+CREATE DATABASE star_schema_db;
+USE star_schema_db;
+
+CREATE TABLE product_dim (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    category VARCHAR(30)
+);
+
+CREATE TABLE customer_dim (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(30)
+);
+
+CREATE TABLE time_dim (
+    time_id INT PRIMARY KEY,
+    sale_date DATE,
+    month_name VARCHAR(20),
+    year INT
+);
+
+CREATE TABLE sales_fact (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    customer_id INT,
+    time_id INT,
+    quantity INT,
+    sales_amount DECIMAL(10,2),
+    FOREIGN KEY (product_id) REFERENCES product_dim(product_id),
+    FOREIGN KEY (customer_id) REFERENCES customer_dim(customer_id),
+    FOREIGN KEY (time_id) REFERENCES time_dim(time_id)
+);
+
+INSERT INTO product_dim VALUES
+(1, 'Rice', 'Grocery'),
+(2, 'Milk', 'Dairy'),
+(3, 'Soap', 'Personal Care');
+
+INSERT INTO customer_dim VALUES
+(101, 'Aarav', 'Pune'),
+(102, 'Priya', 'Mumbai'),
+(103, 'Rahul', 'Nagpur');
+
+INSERT INTO time_dim VALUES
+(1, '2026-11-18', 'November', 2026),
+(2, '2026-11-19', 'November', 2026),
+(3, '2026-11-20', 'November', 2026);
+
+INSERT INTO sales_fact VALUES
+(1, 1, 101, 1, 2, 1200),
+(2, 2, 102, 2, 3, 180),
+(3, 3, 103, 2, 4, 240),
+(4, 1, 102, 3, 1, 600),
+(5, 2, 101, 3, 2, 120);
+
+SELECT * FROM product_dim;
+SELECT * FROM customer_dim;
+SELECT * FROM time_dim;
+SELECT * FROM sales_fact;
+
+SELECT 
+    p.product_name,
+    p.category,
+    c.customer_name,
+    c.city,
+    t.sale_date,
+    f.quantity,
+    f.sales_amount
+FROM sales_fact f
+JOIN product_dim p ON f.product_id = p.product_id
+JOIN customer_dim c ON f.customer_id = c.customer_id
+JOIN time_dim t ON f.time_id = t.time_id;
+
+SELECT SUM(sales_amount) AS total_sales
+FROM sales_fact;
+
+SELECT p.category, SUM(f.sales_amount) AS category_sales
+FROM sales_fact f
+JOIN product_dim p ON f.product_id = p.product_id
+GROUP BY p.category;
+
+
+-- ==============================
+-- SNOWFLAKE SCHEMA
+-- ==============================
+
+CREATE DATABASE snowflake_schema_db;
+USE snowflake_schema_db;
+
+CREATE TABLE category_dim (
+    category_id INT PRIMARY KEY,
+    category_name VARCHAR(30)
+);
+
+CREATE TABLE product_dim (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    category_id INT,
+    FOREIGN KEY (category_id) REFERENCES category_dim(category_id)
+);
+
+CREATE TABLE city_dim (
+    city_id INT PRIMARY KEY,
+    city_name VARCHAR(30)
+);
+
+CREATE TABLE customer_dim (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city_id INT,
+    FOREIGN KEY (city_id) REFERENCES city_dim(city_id)
+);
+
+CREATE TABLE time_dim (
+    time_id INT PRIMARY KEY,
+    sale_date DATE,
+    month_name VARCHAR(20),
+    year INT
+);
+
+CREATE TABLE sales_fact (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    customer_id INT,
+    time_id INT,
+    quantity INT,
+    sales_amount DECIMAL(10,2),
+    FOREIGN KEY (product_id) REFERENCES product_dim(product_id),
+    FOREIGN KEY (customer_id) REFERENCES customer_dim(customer_id),
+    FOREIGN KEY (time_id) REFERENCES time_dim(time_id)
+);
+
+INSERT INTO category_dim VALUES
+(1, 'Grocery'),
+(2, 'Dairy'),
+(3, 'Personal Care');
+
+INSERT INTO product_dim VALUES
+(1, 'Rice', 1),
+(2, 'Milk', 2),
+(3, 'Soap', 3);
+
+INSERT INTO city_dim VALUES
+(1, 'Pune'),
+(2, 'Mumbai'),
+(3, 'Nagpur');
+
+INSERT INTO customer_dim VALUES
+(101, 'Aarav', 1),
+(102, 'Priya', 2),
+(103, 'Rahul', 3);
+
+INSERT INTO time_dim VALUES
+(1, '2026-11-18', 'November', 2026),
+(2, '2026-11-19', 'November', 2026),
+(3, '2026-11-20', 'November', 2026);
+
+INSERT INTO sales_fact VALUES
+(1, 1, 101, 1, 2, 1200),
+(2, 2, 102, 2, 3, 180),
+(3, 3, 103, 2, 4, 240),
+(4, 1, 102, 3, 1, 600),
+(5, 2, 101, 3, 2, 120);
+
+SELECT * FROM category_dim;
+SELECT * FROM product_dim;
+SELECT * FROM city_dim;
+SELECT * FROM customer_dim;
+SELECT * FROM time_dim;
+SELECT * FROM sales_fact;
+
+SELECT 
+    p.product_name,
+    cat.category_name,
+    c.customer_name,
+    ci.city_name,
+    t.sale_date,
+    f.quantity,
+    f.sales_amount
+FROM sales_fact f
+JOIN product_dim p ON f.product_id = p.product_id
+JOIN category_dim cat ON p.category_id = cat.category_id
+JOIN customer_dim c ON f.customer_id = c.customer_id
+JOIN city_dim ci ON c.city_id = ci.city_id
+JOIN time_dim t ON f.time_id = t.time_id;
+
+SELECT SUM(sales_amount) AS total_sales
+FROM sales_fact;
+
+SELECT cat.category_name, SUM(f.sales_amount) AS category_sales
+FROM sales_fact f
+JOIN product_dim p ON f.product_id = p.product_id
+JOIN category_dim cat ON p.category_id = cat.category_id
+GROUP BY cat.category_name;
+Star Schema consists of one central fact table directly connected to dimension tables, giving it a star-like structure. Snowflake Schema is an extension of Star Schema in which dimension tables are further divided into smaller normalized tables. Star Schema has fewer joins, is simpler and offers faster query performance, while Snowflake Schema reduces redundancy and improves data organization but requires more joins.
+
+Question 6
+CREATE DATABASE student_db;
+USE student_db;
+
+CREATE TABLE STUDENT_RESULT (
+    Student_ID INT,
+    Student_Name VARCHAR(50),
+    Subject VARCHAR(30),
+    Marks INT,
+    Semester INT
+);
+
+INSERT INTO STUDENT_RESULT VALUES
+(101, 'Aarav', 'DBMS', 85, 3),
+(101, 'Aarav', 'OS', 78, 3),
+(102, 'Priya', 'DBMS', 92, 3),
+(102, 'Priya', 'OS', 88, 3),
+(103, 'Rahul', 'DBMS', 65, 3),
+(103, 'Rahul', 'OS', 72, 3),
+(104, 'Sneha', 'DBMS', 95, 3),
+(104, 'Sneha', 'OS', 90, 3),
+(105, 'Kabir', 'DBMS', 55, 3),
+(105, 'Kabir', 'OS', 68, 3);
+
+SELECT * FROM STUDENT_RESULT;
+
+SELECT AVG(Marks) AS Average_Marks
+FROM STUDENT_RESULT;
+
+SELECT Subject, AVG(Marks) AS Average_Marks
+FROM STUDENT_RESULT
+GROUP BY Subject;
+OLAP is used for analysing academic data from different dimensions such as student, subject, department and semester. It helps calculate averages, compare performance, identify weak subjects and track trends over time. This analysis helps teachers and college management make better academic decisions.
+
+Question 7
+CREATE DATABASE star_schema_db;
+USE star_schema_db;
+
+CREATE TABLE Product_Dim (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(50),
+    category VARCHAR(30)
+);
+
+CREATE TABLE Customer_Dim (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(30)
+);
+
+CREATE TABLE Time_Dim (
+    time_id INT PRIMARY KEY,
+    sale_date DATE,
+    month_name VARCHAR(20),
+    year INT
+);
+
+CREATE TABLE Sales_Fact (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    customer_id INT,
+    time_id INT,
+    quantity INT,
+    sales_amount DECIMAL(10,2),
+    FOREIGN KEY (product_id) REFERENCES Product_Dim(product_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer_Dim(customer_id),
+    FOREIGN KEY (time_id) REFERENCES Time_Dim(time_id)
+);
+
+INSERT INTO Product_Dim VALUES
+(1, 'Laptop', 'Electronics'),
+(2, 'Mobile', 'Electronics'),
+(3, 'Shirt', 'Clothing'),
+(4, 'Shoes', 'Footwear');
+
+INSERT INTO Customer_Dim VALUES
+(101, 'Aarav', 'Pune'),
+(102, 'Priya', 'Mumbai'),
+(103, 'Rahul', 'Nagpur'),
+(104, 'Sneha', 'Pune');
+
+INSERT INTO Time_Dim VALUES
+(1, '2026-11-17', 'November', 2026),
+(2, '2026-11-18', 'November', 2026),
+(3, '2026-11-19', 'November', 2026),
+(4, '2026-11-20', 'November', 2026);
+
+INSERT INTO Sales_Fact VALUES
+(1, 1, 101, 1, 2, 100000),
+(2, 2, 102, 1, 3, 45000),
+(3, 3, 103, 2, 2, 4000),
+(4, 1, 104, 3, 1, 50000),
+(5, 4, 101, 4, 2, 6000),
+(6, 2, 103, 4, 1, 15000);
+
+SELECT * FROM Product_Dim;
+SELECT * FROM Customer_Dim;
+SELECT * FROM Time_Dim;
+SELECT * FROM Sales_Fact;
+
+SELECT
+    f.sale_id,
+    p.product_name,
+    p.category,
+    c.customer_name,
+    c.city,
+    t.sale_date,
+    f.quantity,
+    f.sales_amount
+FROM Sales_Fact f
+JOIN Product_Dim p ON f.product_id = p.product_id
+JOIN Customer_Dim c ON f.customer_id = c.customer_id
+JOIN Time_Dim t ON f.time_id = t.time_id;
+
+SELECT SUM(sales_amount) AS Total_Sales
+FROM Sales_Fact;
+
+SELECT p.category, SUM(f.sales_amount) AS Category_Sales
+FROM Sales_Fact f
+JOIN Product_Dim p ON f.product_id = p.product_id
+GROUP BY p.category;
+Star Schema is a data warehouse design in which one central fact table is connected directly to multiple dimension tables. In this example, Sales_Fact is the central table storing sales quantity and amount. Product_Dim stores product details, Customer_Dim stores customer details, and Time_Dim stores date-related details. It is called a Star Schema because its structure resembles a star. It is useful for analytical queries, reporting and decision-making because it simplifies joins and improves query understanding and analysis.
+
+Question 8
+use college
+
+db.students.drop()
+
+db.students.insertMany([
+  {roll_no:1,name:"Aarav",department:"IT",marks:85,age:20,city:"Pune",skills:["Java","MongoDB","Python"],address:{city:"Pune",state:"Maharashtra"}},
+  {roll_no:2,name:"Priya",department:"CS",marks:92,age:21,city:"Mumbai",skills:["Python","AI","Java"],address:{city:"Mumbai",state:"Maharashtra"}},
+  {roll_no:3,name:"Rahul",department:"ENTC",marks:67,age:20,city:"Nagpur",skills:["C","Embedded","IoT"],address:{city:"Nagpur",state:"Maharashtra"}},
+  {roll_no:4,name:"Sneha",department:"IT",marks:78,age:21,city:"Pune",skills:["JavaScript","React","MongoDB"],address:{city:"Pune",state:"Maharashtra"}},
+  {roll_no:5,name:"Kabir",department:"CS",marks:55,age:19,city:"Nashik",skills:["C++","Python"],address:{city:"Nashik",state:"Maharashtra"}},
+  {roll_no:6,name:"Meera",department:"IT",marks:95,age:22,city:"Mumbai",skills:["Java","AI","Cloud"],address:{city:"Mumbai",state:"Maharashtra"}},
+  {roll_no:7,name:"Rohan",department:"ENTC",marks:73,age:20,city:"Pune",skills:["IoT","Python","Arduino"],address:{city:"Pune",state:"Maharashtra"}},
+  {roll_no:8,name:"Ananya",department:"CS",marks:88,age:21,city:"Nagpur",skills:["AI","Machine Learning","Python"],address:{city:"Nagpur",state:"Maharashtra"}},
+  {roll_no:9,name:"Vikram",department:"IT",marks:42,age:19,city:"Nashik",skills:["HTML","CSS"],address:{city:"Nashik",state:"Maharashtra"}},
+  {roll_no:10,name:"Isha",department:"CS",marks:81,age:20,city:"Pune",skills:["Java","SQL","Python"],address:{city:"Pune",state:"Maharashtra"}}
+])
+
+db.students.find()
+
+db.students.find({marks:{$gt:80}})
+
+db.students.find({marks:{$gte:60,$lte:90}})
+
+db.students.find({department:{$in:["IT","CS"]}})
+
+db.students.find({department:{$ne:"IT"}})
+
+db.students.find({$and:[{department:"IT"},{marks:{$gt:75}}]})
+
+db.students.find({$or:[{department:"CS"},{marks:{$gt:90}}]})
+
+db.students.find({marks:{$not:{$lt:70}}})
+
+db.students.find({name:{$regex:"^A",$options:"i"}})
+
+db.students.find({skills:{$in:["Python"]}})
+
+db.students.find({age:{$gt:20},city:"Pune"})
+
+db.students.find({}, {name:1,department:1,marks:1,_id:0})
+
+db.students.find().sort({marks:-1})
+
+db.students.find().sort({marks:-1}).limit(3)
+
+db.students.find({"address.city":"Pune"})
+
+db.students.find({age:{$exists:true}})
+
+db.students.find({marks:{$gt:75}}).sort({marks:-1})
+
+db.students.countDocuments({department:"IT"})
+
+db.students.aggregate([{$group:{_id:"$department",average_marks:{$avg:"$marks"}}}])
+
+db.students.aggregate([{$group:{_id:"$department",highest_marks:{$max:"$marks"}}}])
+
+We created a MongoDB database named college and inserted student documents containing details such as name, department, marks, age, skills and address. We performed complex queries using comparison operators, logical operators, array operators and pattern matching. We also used sorting, projection, limiting and aggregation to filter, organize and analyze student data.
