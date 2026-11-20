@@ -83,9 +83,8 @@ SELECT * FROM accounts;
 START TRANSACTION;
 
 UPDATE accounts
-SET balance = balance - 15000
-WHERE account_id = 102
-AND balance >= 15000;
+SET balance = balance - 1000
+WHERE account_id = 102;
 
 ROLLBACK;
 
@@ -200,6 +199,14 @@ db.patients.insertMany([
 ])
 
 db.patients.find()
+
+var mapFunction = function() {
+    emit(this.department, 1);
+};
+
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
 
 db.patients.mapReduce(
     mapFunction,

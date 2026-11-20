@@ -177,6 +177,14 @@ db.students.insertMany([
   { roll_no: 6, name: "Meera", department: "ENTC", marks: 81 }
 ])
 
+var mapFunction = function() {
+    emit(this.department, 1);
+};
+
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
+
 db.students.mapReduce(
     mapFunction,
     reduceFunction,

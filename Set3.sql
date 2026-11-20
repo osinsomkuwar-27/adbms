@@ -12,7 +12,7 @@ CREATE TABLE PRODUCT (
 PARTITION BY RANGE (price) (
     PARTITION p_low VALUES LESS THAN (1000),
     PARTITION p_mid VALUES LESS THAN (5000),
-    PARTITION p_high VALUES LESS THAN (1000000)
+    PARTITION p_high VALUES LESS THAN (MAXVALUE)
 );
 
 INSERT INTO PRODUCT VALUES
@@ -219,6 +219,14 @@ db.products.insertMany([
 ])
 
 db.products.find()
+
+var mapFunction = function() {
+    emit(this.category, 1);
+};
+
+var reduceFunction = function(key, values) {
+    return Array.sum(values);
+};
 
 db.products.mapReduce(
     mapFunction,
